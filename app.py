@@ -366,8 +366,8 @@ with st.sidebar:
         "Test-Time Augmentation (TTA)",
         min_value=1,
         max_value=8,
-        value=8,
-        help="Number of geometric rotation and flip views averaged during inference. 1 = Fastest CPU inference, 8 = Maximum diagnostic stability."
+        value=1,
+        help="Number of geometric rotation and flip views averaged during inference. 1 = Fastest & lowest RAM (recommended for cloud), 8 = Full clinical ensemble."
     )
     
     enable_scan_sim = st.checkbox("Display Scanning Animation", value=True, help="Simulates real-time clinical laser scanning during preprocessing.")
@@ -470,19 +470,24 @@ if active_image_bytes is not None:
         scan_placeholder.empty()
 
     # 1. Execute full preprocessing stages
-    pipeline_data = pt.run_pipeline_stages(bgr)
-    
-    # 2. Compute ABCDE features
-    abcde = pt.compute_abcde_features(pipeline_data['final_tensor'], pipeline_data['segmentation'])
-    
-    # 3. Model Inference
-    with st.spinner("Processing through dual-backbone neural network..."):
-        res = inf.classify(
-            model=model,
-            rgb=pipeline_data['final_tensor'],
-            meta=encoded_meta,
-            routing=routing_mode
-        )
+    try:
+        pipeline_data = pt.run_pipeline_stages(bgr)
+        abcde = pt.compute_abcde_features(pipeline_data['final_tensor'], pipeline_data['segmentation'])
+        
+        with st.spinner("Processing through dual-backbone neural network..."):
+            res = inf.classify(
+                model=model,
+                rgb=pipeline_data['final_tensor'],
+                meta=encoded_meta,
+                routing=routing_mode,
+                n_tta=n_tta
+            )
+    except Exception as err:
+        st.error(f"Error during processing: {str(err)}")
+        with st.expander("Diagnostic Traceback"):
+            import traceback
+            st.code(traceback.format_exc(), language="python")
+        st.stop()
 
     # ----------------------------------------------------------------------------
     # Hero Diagnosis Card
