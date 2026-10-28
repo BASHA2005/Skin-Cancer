@@ -159,16 +159,26 @@ def _views(rgb, n):
 
 def predict_nodes(model, rgb, meta=None, n_tta=None):
     n = CFG['n_tta'] if n_tta is None else n_tta
-    inputs = {'image': _views(rgb, n)}
-    if USE_META:
-        inputs['meta'] = np.repeat((meta if meta is not None else meta_vector())[None], n, 0).astype('float32')
-    out = model(inputs, training=False)
+    views = _views(rgb, n)
     names = NODES + (['flat'] if FLAT_HEAD else [])
-    return {k: np.asarray(o, 'float32').mean(0, keepdims=True) for k, o in zip(names, out)}
+    
+    # Process views with batch_size=1 sequentially to avoid OOM crashes on cloud containers
+    meta_vec = (meta if meta is not None else meta_vector())[None].astype('float32') if USE_META else None
+    
+    accum = {k: 0.0 for k in names}
+    for i in range(n):
+        single_input = {'image': views[i:i+1]}
+        if USE_META:
+            single_input['meta'] = meta_vec
+        out = model(single_input, training=False)
+        for k, o in zip(names, out):
+            accum[k] = accum[k] + np.asarray(o, 'float32')
+            
+    return {k: accum[k] / float(n) for k in names}
 
-def classify(model, rgb, meta=None, routing=None):
+def classify(model, rgb, meta=None, routing=None, n_tta=None):
     # rgb: output of preprocess(); returns the predicted class, class probabilities and per-node probabilities
-    P = predict_nodes(model, rgb, meta)
+    P = predict_nodes(model, rgb, meta, n_tta=n_tta)
     routing = routing or CFG['routing']; soft = soft_route(P)[0]
     if routing == 'hard': label, probs = int(hard_route(P)[0]), soft
     elif routing == 'flat': probs = P['flat'][0]; label = int(probs.argmax())
