@@ -1,0 +1,156 @@
+{
+  "img_size": 320,
+  "classes": [
+    "MEL",
+    "NV",
+    "BCC",
+    "AK",
+    "BKL",
+    "DF",
+    "SCC"
+  ],
+  "class_full": {
+    "MEL": "Melanoma",
+    "NV": "Melanocytic nevus",
+    "BCC": "Basal cell carcinoma",
+    "AK": "Actinic keratosis",
+    "BKL": "Benign keratosis",
+    "DF": "Dermatofibroma",
+    "SCC": "Squamous cell carcinoma"
+  },
+  "nodes": [
+    "root",
+    "mal",
+    "epi",
+    "ben",
+    "ker"
+  ],
+  "node_classes": {
+    "root": [
+      "Benign",
+      "Malignant"
+    ],
+    "mal": [
+      "MEL",
+      "Epidermal"
+    ],
+    "epi": [
+      "BCC",
+      "SCC"
+    ],
+    "ben": [
+      "DF",
+      "NV",
+      "Keratosis"
+    ],
+    "ker": [
+      "AK",
+      "BKL"
+    ]
+  },
+  "label_tab": [
+    [
+      1,
+      0,
+      -1,
+      -1,
+      -1
+    ],
+    [
+      0,
+      -1,
+      -1,
+      1,
+      -1
+    ],
+    [
+      1,
+      1,
+      0,
+      -1,
+      -1
+    ],
+    [
+      0,
+      -1,
+      -1,
+      2,
+      0
+    ],
+    [
+      0,
+      -1,
+      -1,
+      2,
+      1
+    ],
+    [
+      0,
+      -1,
+      -1,
+      0,
+      -1
+    ],
+    [
+      1,
+      1,
+      1,
+      -1,
+      -1
+    ]
+  ],
+  "preproc": "light",
+  "hair_thr": 25,
+  "hair_max_side": 768,
+  "denoise": "median",
+  "use_meta": true,
+  "meta_dim": 14,
+  "flat_head": true,
+  "hidden": 512,
+  "dropout": 0.5,
+  "l2": 0.0001,
+  "routing": "hard",
+  "n_tta": 8,
+  "meta": {
+    "columns": [
+      "age",
+      "age_missing",
+      "sex_male",
+      "sex_female",
+      "sex_unknown",
+      "site_anterior torso",
+      "site_head/neck",
+      "site_lateral torso",
+      "site_lower extremity",
+      "site_oral/genital",
+      "site_palms/soles",
+      "site_posterior torso",
+      "site_unknown",
+      "site_upper extremity"
+    ],
+    "age_median": 50.0,
+    "age_std": 18.082608349527803,
+    "sex_cats": [
+      "male",
+      "female",
+      "unknown"
+    ],
+    "sites": [
+      "anterior torso",
+      "head/neck",
+      "lateral torso",
+      "lower extremity",
+      "oral/genital",
+      "palms/soles",
+      "posterior torso",
+      "unknown",
+      "upper extremity"
+    ]
+  },
+  "test_overall_accuracy": 80.99,
+  "trained_with": {
+    "tensorflow": "2.20.0",
+    "group_split": false,
+    "dataset": "ISIC 2019 (7 classes, VASC excluded)"
+  }
+}
